@@ -5,8 +5,8 @@ import numpy as np
 thres = 0.45 # Threshold to detect object
 
 cap = cv2.VideoCapture(0)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 480)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 320)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1366)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 768)
 cap.set(cv2.CAP_PROP_FPS, 16)
 
 # allow the camera to warmup
@@ -23,21 +23,22 @@ weightsPath = 'frozen_inference_graph.pb'
 
 net = cv2.dnn_DetectionModel(weightsPath,configPath)
 net.setInputSize(320,320)
-net.setInputScale(1.0/ 127.5)
+net.setInputScale(1.0/127.5)
 net.setInputMean((127.5, 127.5, 127.5))
 net.setInputSwapRB(True)
 
 while(True):
     _, img = cap.read()
+    img = cv2.flip(img, 1)
     classIds, confs, bbox = net.detect(img,confThreshold=thres)
-    frame = np.asarray(img)
 
     if len(classIds) != 0:
         for classId, confidence,box in zip(classIds.flatten(),confs.flatten(),bbox):
+            # if classId != 1: # exclude persons
             cv2.rectangle(img,box,color=(0,255,0),thickness=2)
             cv2.putText(img,classNames[classId-1].upper(),(box[0]+10,box[1]+30),
             cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2)
-            cv2.putText(img,str(round(confidence*100,2)),(box[0]+200,box[1]+30),
+            cv2.putText(img,str(round(confidence*100,2)),(box[0]+10,box[1]+60),
             cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2)
 
     # Display
